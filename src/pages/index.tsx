@@ -9,6 +9,15 @@ import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
 export default function Home(): JSX.Element {
+  async function fetchImages({ pageParam = null}){
+    const { data } = await api.get('/api/images', {
+      params: {
+        after: pageParam,
+      },
+    });
+
+    return data;
+  }
   const {
     data,
     isLoading,
@@ -18,18 +27,21 @@ export default function Home(): JSX.Element {
     hasNextPage,
   } = useInfiniteQuery(
     'images',
-    // TODO AXIOS REQUEST WITH PARAM
-    ,
-    // TODO GET AND RETURN NEXT PAGE PARAM
-  );
+    fetchImages, {
+      getNextPageParam: lastPage => lastPage.after,
+    });
 
   const formattedData = useMemo(() => {
     // TODO FORMAT AND FLAT DATA ARRAY
   }, [data]);
 
-  // TODO RENDER LOADING SCREEN
+  if (isError) {
+    return <Error />
+  }
 
-  // TODO RENDER ERROR SCREEN
+  if (isLoading) {
+    return <Loading />
+  }
 
   return (
     <>
