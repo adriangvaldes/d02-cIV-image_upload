@@ -9,7 +9,7 @@ import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
 export default function Home(): JSX.Element {
-  async function fetchImages({ pageParam = null}){
+  async function fetchImages({ pageParam = null }) {
     const { data } = await api.get('/api/images', {
       params: {
         after: pageParam,
@@ -28,11 +28,15 @@ export default function Home(): JSX.Element {
   } = useInfiniteQuery(
     'images',
     fetchImages, {
-      getNextPageParam: lastPage => lastPage.after,
-    });
+    getNextPageParam: lastPage => lastPage.after,
+  });
 
   const formattedData = useMemo(() => {
-    // TODO FORMAT AND FLAT DATA ARRAY
+    if (!data) return [];
+
+    return data.pages.reduce(
+      (acc, currentPage) => [...acc, ...currentPage.data], []
+    );
   }, [data]);
 
   if (isError) {
@@ -49,7 +53,11 @@ export default function Home(): JSX.Element {
 
       <Box maxW={1120} px={20} mx="auto" my={20}>
         <CardList cards={formattedData} />
-        {/* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */}
+        {hasNextPage && (
+          <Button onClick={() => fetchNextPage()}>
+            {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
+          </Button>
+        )}
       </Box>
     </>
   );
